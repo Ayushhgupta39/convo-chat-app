@@ -9,7 +9,8 @@ export default function Home() {
     <main>
       <Box
         className="auth-page"
-        display={"grid"}
+        display={["flex", "flex", "flex", "grid"]}
+        justifyContent={"center"}
         gridTemplateColumns={"60% 40%"}
       >
         <Box
@@ -18,6 +19,7 @@ export default function Home() {
           height={"100vh"}
           backgroundColor={"gray.100"}
           gap={"10px"}
+          width={[null, "full", null, null]}
         >
           <Box
             fontWeight={"700"}
@@ -41,16 +43,22 @@ export default function Home() {
                 Enter your account details.
               </Text>
             </Box>
-            <Box gap={"10px"} display={"flex"} flexDirection={"column"}>
+            <Box
+              gap={"10px"}
+              display={"flex"}
+              flexDirection={"column"}
+              justifyContent={["center", "center", null, null]}
+              alignItems={["center", "center", null, null]}
+            >
               <Button
-                width={"md"}
+                width={["xs", "xs", "md", "md"]}
                 leftIcon={<FaGithub />}
                 backgroundColor={"white"}
               >
                 Login with GitHub
               </Button>
               <Button
-                width={"md"}
+                width={["xs", "xs", "md", "md"]}
                 leftIcon={<FcGoogle />}
                 backgroundColor={"white"}
               >
@@ -82,7 +90,7 @@ export default function Home() {
               translateX={"50px"}
               backgroundColor={"white"}
               placeholder="Enter your email"
-              width={"md"}
+              width={["xs", "xs", "md", "md"]}
               variant={"unstyled"}
               padding={"2"}
             />
@@ -90,7 +98,7 @@ export default function Home() {
               type="password"
               backgroundColor={"white"}
               placeholder="Password"
-              width={"md"}
+              width={["xs", "xs", "md", "md"]}
               variant={"unstyled"}
               padding={"2"}
             />
@@ -98,13 +106,15 @@ export default function Home() {
               _hover={{ backgroundColor: "blackAlpha.700" }}
               backgroundColor={"black"}
               textColor={"white"}
-              width={"md"}
+              width={["xs", "xs", "md", "md"]}
             >
               Sign in
             </Button>
             <Box display={"flex"} gap={"2px"}>
               <Text>New to Convo?</Text>
-              <Text fontWeight={"bold"} as={"u"}>Create an account</Text>
+              <Text fontWeight={"bold"} as={"u"}>
+                Create an account
+              </Text>
             </Box>
           </Box>
         </Box>
@@ -114,6 +124,7 @@ export default function Home() {
           backgroundSize={"cover"}
           boxShadow={"dark-lg"}
           backgroundRepeat={"no-repeat"}
+          display={["none", "none", "flex"]}
         ></Box>
       </Box>
     </main>
