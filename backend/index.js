@@ -9,6 +9,8 @@ const app = express();
 
 app.use(cors());
 
+app.use(express.json()); // To accept json data.
+
 app.use("/", router);
 
 connectDB();
