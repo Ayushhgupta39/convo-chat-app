@@ -7,17 +7,26 @@ import {
   InputGroup,
   InputRightElement,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [show, setShow] = useState(false);
   const [variant, setVariant] = useState("login");
-
   const [credentials, setCredentials] = useState({});
+
+  const [loading, setLoading] = useState({
+    signInButton: false,
+  });
+
+  const toast = useToast();
+  const router = useRouter();
 
   const handleShow = () => {
     setShow(!show);
@@ -32,7 +41,154 @@ export default function Home() {
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
-  console.log(credentials);
+
+  const postImage = (image) => {
+    try {
+      setLoading({ signInButton: true });
+      if (image === undefined) {
+        console.log("Undefined Image");
+        return;
+      }
+
+      if (
+        image.type === "image/jpeg" ||
+        image.type === "image/png" ||
+        image.type === "jpg"
+      ) {
+        const data = new FormData();
+        data.append("file", image);
+        data.append("upload_preset", "Convo-chat-app");
+        data.append("cloud_name", "ayush3902");
+        fetch("https://api.cloudinary.com/v1_1/ayush3902/image/upload", {
+          method: "post",
+          body: data,
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            setCredentials((prevCredentials) => ({
+              ...prevCredentials,
+              picture: data.url.toString(),
+            }));
+            setLoading({ signInButton: false });
+          });
+      } else {
+        console.log("Please select an image");
+      }
+    } catch (err) {
+      console.log(err);
+      setLoading({ signInButton: false });
+    }
+  };
+
+  const loginUser = async () => {
+    setLoading({ signInButton: true });
+    if (!credentials.email || !credentials.password) {
+      toast({
+        title: "Email or password missing",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading({ signInButton: false });
+      return;
+    }
+
+    try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
+
+      const { email, password } = credentials;
+      const { data } = await axios.post(
+        "http://localhost:8080/login",
+        {
+          email,
+          password,
+        },
+        config
+      );
+
+      toast({
+        title: "Login successful",
+        description: "Welcome Back!",
+        status: "success",
+        duration: 3000,
+        position: "bottom",
+        isClosable: true,
+      });
+
+      localStorage.setItem("userInfo", JSON.stringify(data));
+      setLoading({ signInButton: false });
+      router.push("/chats");
+    } catch (err) {
+      console.log(err);
+      toast({
+        title: "Incorrect email or password",
+        status: "error",
+        duration: 4000,
+        position: "bottom",
+        isClosable: true,
+      });
+      setLoading({ signInButton: false });
+    }
+  };
+
+  const registerUser = async () => {
+    setLoading({ signInButton: true });
+    if (!credentials.name || !credentials.email || !credentials.password) {
+      toast({
+        title: "Please enter all fields.",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading({ signInButton: false });
+      return;
+    }
+
+    try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
+
+      const { name, email, password, picture } = credentials;
+
+      const { data } = await axios.post(
+        "http://localhost:8080/register",
+        { name, email, password, picture },
+        config
+      );
+      toast({
+        title: "Account created.",
+        description: "Welcome to Convo.",
+        status: "success",
+        duration: 3000,
+        position: "bottom",
+        isClosable: true,
+      });
+
+      localStorage.setItem("userInfo", JSON.stringify(data));
+      setLoading({ signInButton: false });
+      router.push("/chats");
+    } catch (error) {
+      console.log("Error", error);
+      toast({
+        title: "An Error occured.",
+        description: "Check the browser console for more details.",
+        status: "error",
+        duration: 4000,
+        position: "bottom",
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <main>
       <Box
@@ -193,7 +349,7 @@ export default function Home() {
                   padding={"2"}
                   name="picture"
                   id="picture"
-                  onChange={(e) => handleChange(e)}
+                  onChange={(e) => postImage(e.target.files[0])}
                 />
               </Box>
             ) : null}
@@ -202,6 +358,8 @@ export default function Home() {
               backgroundColor={"black"}
               textColor={"white"}
               width={["xs", "xs", "md", "md"]}
+              isLoading={loading.signInButton}
+              onClick={variant === "login" ? loginUser : registerUser}
             >
               {variant === "login" ? "Login" : "Register"}
             </Button>
