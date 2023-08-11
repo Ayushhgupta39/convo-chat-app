@@ -9,7 +9,6 @@ const page = () => {
   useEffect(() => {
     const fetchChats = async () => {
       const response = await axios.get("http://localhost:8080/api/chats");
-      console.log(response.data);
       setChats(response.data);
     };
     fetchChats();
