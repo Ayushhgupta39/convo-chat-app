@@ -1,5 +1,6 @@
 const express = require("express");
-const { registerUser, loginUser } = require("../controllers/userControllers");
+const { registerUser, loginUser, getAllUsers } = require("../controllers/userControllers");
+const protect = require("../middleware/authMiddleware");
 const router = express.Router(); 
 
 // router.get("/api/chats/:id", (req, res) => {
@@ -8,6 +9,9 @@ const router = express.Router();
 // });
 
 router.post("/register", registerUser);
+
 router.post("/login", loginUser);
+
+router.get("/users", protect, getAllUsers);
 
 module.exports = router;

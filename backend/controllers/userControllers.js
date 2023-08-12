@@ -1,6 +1,7 @@
 const generateToken = require("../config/generateToken");
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
+const asyncHandler = require("express-async-handler");
 
 const registerUser = async (req, res, next) => {
   try {
@@ -68,4 +69,20 @@ const loginUser = async (req, res, next) => {
   }
 };
 
-module.exports = { registerUser, loginUser };
+const getAllUsers = asyncHandler(async (req, res) => {
+  const keyword = req.query.search ? {
+    $or: [
+      {
+        name: { $regex: req.query.search, $options: "i" }
+      },
+      {
+        email: { $regex: req.query.search, $options: "i" }
+      }
+    ]
+  } : {};
+
+  const users = await User.find(keyword).find({ _id: { $ne:req.user._id } });
+  res.send(users);
+})
+
+module.exports = { registerUser, loginUser, getAllUsers };
