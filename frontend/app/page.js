@@ -12,7 +12,7 @@ import {
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
@@ -189,6 +189,14 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("userInfo"));
+
+    if (user) {
+      router.push("/chats");
+    }
+  }, [router]);
+
   return (
     <main>
       <Box
@@ -208,8 +216,6 @@ export default function Home() {
           {variant === "login" ? (
             <Box
               fontWeight={"700"}
-              display={"flex"}
-              justifyContent={"space-between"}
               margin={"5"}
             >
               <Text>Convo</Text>
