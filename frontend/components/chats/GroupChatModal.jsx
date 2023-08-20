@@ -66,7 +66,7 @@ const GroupChatModal = ({ children }) => {
   };
 
   const handleGroup = (userToAdd) => {
-    if (selectedUsers.includes(userToAdd)) {
+    if (selectedUsers.some((user) => user._id === userToAdd._id)) {
       toast({
         title: "User already present",
         description: "This user is already present.",
@@ -76,12 +76,16 @@ const GroupChatModal = ({ children }) => {
       });
       return;
     }
-    setSelectedUsers([...selectedUsers], userToAdd);
+
+    setSelectedUsers([...selectedUsers, userToAdd]);
+    console.log("Selected Users: ", selectedUsers);
   };
 
   const handleDelete = (user) => {
-    
-  }
+    setSelectedUsers(
+      selectedUsers.filter((sel) => sel._id !== user._id)
+    );
+  };
 
   return (
     <>
@@ -120,26 +124,28 @@ const GroupChatModal = ({ children }) => {
               onChange={(e) => handleSearch(e.target.value)}
             />
 
-            {selectedUsers.map((user) => (
-              <UserBadgeItem
-                key={user._id}
-                user={user}
-                handleFunction={() => handleDelete(user)}
-              />
-            ))}
+            <Box w="100%" display={"flex"} flexWrap={"wrap"}>
+              {selectedUsers.map((user) => (
+                <UserBadgeItem
+                  key={user._id}
+                  user={user}
+                  handleFunction={() => handleDelete(user)}
+                />
+              ))}
+            </Box>
 
             {loading ? (
               <div>Loading...</div>
             ) : (
-              searchResult
-                ?.slice(0, 4)
-                .map((user) => (
+              searchResult?.slice(0, 4).map((user) => (
+                <Box width={"full"}>
                   <UserSearchItem
                     key={user._id}
                     user={user}
                     handleFunction={() => handleGroup(user)}
                   />
-                ))
+                </Box>
+              ))
             )}
           </ModalBody>
 
@@ -153,7 +159,7 @@ const GroupChatModal = ({ children }) => {
               mr={3}
               onClick={handleSubmit}
             >
-              Close
+              Create Group
             </Button>
           </ModalFooter>
         </ModalContent>
