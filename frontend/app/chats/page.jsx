@@ -24,11 +24,12 @@ import { useRouter } from "next/navigation";
 const page = () => {
   const { user, selectedChat } = ChatState();
   const router = useRouter();
+  const [fetchAgain, setFetchAgain] = useState(false);
 
   const logoutUser = () => {
     localStorage.removeItem("userInfo");
     router.push("/");
-  }
+  };
 
   return (
     <Box backgroundColor={"gray.100"} minH={"100vh"}>
@@ -55,15 +56,20 @@ const page = () => {
         </Flex>
       </Flex>
 
-      <Box mx="5" display={"grid"} gridTemplateColumns={"35% 65%"}>
+      <Box
+        mx="5"
+        display={{ base: "flex", md: "grid", lg: "grid" }}
+        gridTemplateColumns={"35% 65%"}
+        flexDirection={"column"}
+      >
         <Box>
           <Box mx={"1"}>
             <SearchBar />
-            <MyChats /> 
+            <MyChats fetchAgain={fetchAgain} />
           </Box>
         </Box>
-        <Box backgroundColor={"white"}>
-          <Chatbox />
+        <Box display={{ base: selectedChat ? "flex" : "none", md: "flex" }}>
+          <Chatbox fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />
         </Box>
       </Box>
     </Box>

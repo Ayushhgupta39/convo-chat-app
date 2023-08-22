@@ -16,13 +16,15 @@ import { getSender } from "@/config/ChatLogics";
 import GroupChatModal from "./GroupChatModal";
 import { useRouter } from "next/navigation";
 
-const MyChats = () => {
+const MyChats = ({ fetchAgain }) => {
   const [loggedUser, setLoggedUser] = useState();
   const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
   const toast = useToast();
   const router = useRouter();
 
-  {console.log(user)}
+  {
+    console.log(user);
+  }
 
   const fetchChats = async () => {
     console.log("Fetch chatss k andar: ", user);
@@ -51,10 +53,14 @@ const MyChats = () => {
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
-  }, [user]);
+  }, [user, fetchAgain]);
 
   return (
-    <Box>
+    <Box
+      display={{ base: selectedChat ? "none" : "flex", md: "flex" }}
+      flexDirection={"column"}
+      fontFamily={"Raleway"}
+    >
       <Flex justifyContent={"space-between"} alignItems={"center"}>
         <Text fontSize={"large"} fontWeight={"bold"}>
           Chats
@@ -78,6 +84,7 @@ const MyChats = () => {
           {chats.map((chat) => {
             return (
               <Flex
+                onClick={() => setSelectedChat(chat)}
                 backgroundColor={selectedChat === chat ? "purple.400" : "white"}
                 color={selectedChat === chat ? "white" : "black"}
                 width={"full"}
@@ -85,7 +92,6 @@ const MyChats = () => {
                 key={chat._id}
                 cursor={"pointer"}
                 p={"2"}
-                fontFamily={"Raleway"}
                 borderRadius={"2xl"}
                 boxShadow={"md"}
                 _hover={{ backgroundColor: "purple.400", color: "white" }}
