@@ -12,7 +12,7 @@ import {
   Image,
   Text,
 } from "@chakra-ui/react";
-import { AiOutlineEye } from "react-icons/ai";
+import { AiOutlineInfoCircle } from "react-icons/ai";
 
 const ProfileModal = ({ user, children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -21,7 +21,7 @@ const ProfileModal = ({ user, children }) => {
       {children ? (
         <span onClick={onOpen}>{children}</span>
       ) : (
-        <AiOutlineEye onClick={onOpen} />
+        <AiOutlineInfoCircle cursor={"pointer"} onClick={onOpen} />
       )}
       <Modal size={"lg"} isCentered isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
@@ -51,7 +51,14 @@ const ProfileModal = ({ user, children }) => {
           </ModalBody>
 
           <ModalFooter>
-            <Button backgroundColor={"black"} color={"white"} borderRadius={"full"} _hover={{ backgroundColor: "gray.600" }} mr={3} onClick={onClose}>
+            <Button
+              backgroundColor={"black"}
+              color={"white"}
+              borderRadius={"full"}
+              _hover={{ backgroundColor: "gray.600" }}
+              mr={3}
+              onClick={onClose}
+            >
               Close
             </Button>
           </ModalFooter>
