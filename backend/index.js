@@ -5,6 +5,7 @@ const port = process.env.PORT;
 const cors = require("cors");
 const connectDB = require("./config/db");
 const chatRoutes = require("./routes/chatRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json()); // To accept json data.
 
 app.use("/", router);
 app.use("/chats/", chatRoutes); 
+app.use("/message", messageRoutes);
 
 connectDB();
 

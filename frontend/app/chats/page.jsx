@@ -32,7 +32,7 @@ const page = () => {
   };
 
   return (
-    <Box backgroundColor={"gray.100"} minH={"100vh"}>
+    <Box backgroundColor={"gray.100"} minHeight={"100vh"}>
       <Flex justifyContent={"space-between"} alignItems={"center"}>
         <Box fontWeight={"700"} mx={"5"} my={"2"}>
           <Text>Convo</Text>
@@ -61,6 +61,7 @@ const page = () => {
         display={{ base: "flex", md: "grid", lg: "grid" }}
         gridTemplateColumns={"35% 65%"}
         flexDirection={"column"}
+        minHeight={"90vh"}
       >
         <Box>
           <Box mx={"1"}>
