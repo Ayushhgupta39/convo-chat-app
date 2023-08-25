@@ -1,13 +1,130 @@
 import { getSender, getSenderFull } from "@/config/ChatLogics";
 import { ChatState } from "@/context/ChatProvider";
-import { Box, Text } from "@chakra-ui/react";
-import React from "react";
+import {
+  Box,
+  Flex,
+  FormControl,
+  Input,
+  Spinner,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
 import { BsFillArrowLeftCircleFill } from "react-icons/bs";
 import ProfileModal from "./ProfileModal";
 import UpdateGroupChatModal from "./UpdateGroupChatModal";
+import axios from "axios";
+import ScrollableChat from "./ScrollableChat";
+import { io } from "socket.io-client";
+
+const ENDPOINT = "http://localhost:8080/";
+var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const { user, selectedChat, setSelectedChat } = ChatState();
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [newMessage, setNewMessage] = useState();
+  const [socketConnected, setSocketConnected] = useState(false);
+  const toast = useToast();
+
+  const fetchMessages = async () => {
+    if (!selectedChat) {
+      return;
+    }
+
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+
+      setLoading(true);
+
+      const { data } = await axios.get(
+        `http://localhost:8080/message/${selectedChat._id}`,
+        config
+      );
+
+      setMessages(data);
+      setLoading(false);
+
+      socket.emit("join chat", selectedChat._id);
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "An error occured.",
+        description: "Check the browser console for more details",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  useEffect(() => {
+    socket = io(ENDPOINT);
+    socket.emit("setup", user);
+    socket.on("connection", () => setSocketConnected(true));
+  }, [])
+
+  
+  useEffect(() => {
+    fetchMessages();
+    selectedChatCompare = selectedChat;
+  }, [selectedChat]);
+
+  useEffect(() => {
+    socket.on("message received", (newMessageRecieved) => {
+      if(!selectedChatCompare || selectedChatCompare._id !== newMessageRecieved.chat._id) {
+        // give notification
+      } else {
+        setMessages([...messages, newMessageRecieved]);
+      }
+    })
+  }, [])
+  
+
+  const sendMessage = async (event) => {
+    if (event.key === "Enter" && newMessage) {
+      try {
+        const config = {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+        };
+
+        setNewMessage("");
+        const { data } = await axios.post(
+          "http://localhost:8080/message",
+          {
+            content: newMessage,
+            chatId: selectedChat._id,
+          },
+          config
+        );
+        console.log(data);
+        socket.emit("newMessage", data);
+        setMessages([...messages, data]);
+      } catch (error) {
+        console.log(error);
+        toast({
+          title: "An error occured.",
+          description: "Check the browser console for more details",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    }
+  };
+
+  const typingHandler = (e) => {
+    setNewMessage(e.target.value);
+  };
+
   return (
     <>
       {selectedChat ? (
@@ -17,6 +134,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
           width={"full"}
           display={"flex"}
           flexDirection={"column"}
+          justifyContent={"space-between"}
         >
           <Box
             alignItems={"center"}
@@ -46,6 +164,43 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
               </>
             )}
           </Box>
+          <Box
+            d="flex"
+            flexDir="column"
+            justifyContent="flex-end"
+            p={3}
+            bg="#E8E8E8"
+            w="100%"
+            h="100%"
+            borderRadius="lg"
+            overflowY="scroll"
+          >
+            {loading ? (
+              <Flex
+                width={"full"}
+                height={"full"}
+                justifyContent={"center"}
+                alignItems={"center"}
+              >
+                <Spinner size={"lg"} />
+              </Flex>
+            ) : (
+              <div className="messages">
+                <ScrollableChat messages={messages} />
+              </div>
+            )}
+          </Box>
+
+          <FormControl p={"2"} onKeyDown={sendMessage} isRequired>
+            <Input
+              type="text"
+              variant={"filled"}
+              bg={"white"}
+              onChange={typingHandler}
+              value={newMessage || ""}
+              placeholder="Write a message..."
+            />
+          </FormControl>
         </Box>
       ) : (
         <Box

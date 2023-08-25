@@ -23,11 +23,11 @@ const MyChats = ({ fetchAgain }) => {
   const router = useRouter();
 
   {
-    console.log(user);
+    console.log("User in MyChats: ", user);
   }
 
   const fetchChats = async () => {
-    console.log("Fetch chatss k andar: ", user);
+    // console.log(user._id);
     try {
       const config = {
         headers: {
@@ -36,24 +36,21 @@ const MyChats = ({ fetchAgain }) => {
       };
 
       const { data } = await axios.get("http://localhost:8080/chats", config);
-      console.log(data);
       setChats(data);
     } catch (error) {
-      console.log(error);
       toast({
-        title: "An error occured.",
-        description: "Check the browser console for more details",
+        title: "Error Occured!",
+        description: "Failed to Load the chats",
         status: "error",
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       });
     }
   };
-
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
-  }, [user, fetchAgain]);
+  }, [user, fetchAgain, router]);
 
   return (
     <Box
@@ -96,7 +93,11 @@ const MyChats = ({ fetchAgain }) => {
                 boxShadow={"md"}
                 _hover={{ backgroundColor: "purple.400", color: "white" }}
               >
-                <Avatar m={"1"} name="" src={chat.users[1].picture} />
+                <Avatar
+                  m={"1"}
+                  name={chat?.users[1]?.name}
+                  src={chat?.users[1]?.picture}
+                />
                 <Text fontWeight={"bold"}>
                   {!chat.isGroupChat
                     ? getSender(loggedUser, chat.users)
