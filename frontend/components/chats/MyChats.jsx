@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Flex,
+  Spinner,
   Text,
   VStack,
   useToast,
@@ -19,38 +20,40 @@ import { useRouter } from "next/navigation";
 const MyChats = ({ fetchAgain }) => {
   const [loggedUser, setLoggedUser] = useState();
   const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
   const router = useRouter();
 
-  {
-    console.log("User in MyChats: ", user);
-  }
-
   const fetchChats = async () => {
-    // console.log(user._id);
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
+    setLoading(true);
+    if (user) {
+      try {
+        const config = {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        };
 
-      const { data } = await axios.get("http://localhost:8080/chats", config);
-      setChats(data);
-    } catch (error) {
-      toast({
-        title: "Error Occured!",
-        description: "Failed to Load the chats",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+        const { data } = await axios.get("http://localhost:8080/chats", config);
+        setChats(data);
+        setLoading(false);
+      } catch (error) {
+        console.log("Error while fetching chats: ", error);
+        toast({
+          title: "Error Occured!",
+          description: "Failed to Load the chats",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        setLoading(false);
+      }
     }
   };
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
-  }, [user, fetchAgain, router]);
+  }, [router, user]);
 
   return (
     <Box
@@ -76,39 +79,47 @@ const MyChats = ({ fetchAgain }) => {
         </GroupChatModal>
       </Flex>
 
-      {chats ? (
-        <VStack>
-          {chats.map((chat) => {
-            return (
-              <Flex
-                onClick={() => setSelectedChat(chat)}
-                backgroundColor={selectedChat === chat ? "purple.400" : "white"}
-                color={selectedChat === chat ? "white" : "black"}
-                width={"full"}
-                alignItems={"center"}
-                key={chat._id}
-                cursor={"pointer"}
-                p={"2"}
-                borderRadius={"2xl"}
-                boxShadow={"md"}
-                _hover={{ backgroundColor: "purple.400", color: "white" }}
-              >
-                <Avatar
-                  m={"1"}
-                  name={chat?.users[1]?.name}
-                  src={chat?.users[1]?.picture}
-                />
-                <Text fontWeight={"bold"}>
-                  {!chat.isGroupChat
-                    ? getSender(loggedUser, chat.users)
-                    : chat.chatName}
-                </Text>
-              </Flex>
-            );
-          })}
-        </VStack>
+      {!loading ? (
+        <div>
+          {chats ? (
+            <VStack>
+              {chats.map((chat) => {
+                return (
+                  <Flex
+                    onClick={() => setSelectedChat(chat)}
+                    backgroundColor={
+                      selectedChat === chat ? "purple.400" : "white"
+                    }
+                    color={selectedChat === chat ? "white" : "black"}
+                    width={"full"}
+                    alignItems={"center"}
+                    key={chat._id}
+                    cursor={"pointer"}
+                    p={"2"}
+                    borderRadius={"2xl"}
+                    boxShadow={"md"}
+                    _hover={{ backgroundColor: "purple.400", color: "white" }}
+                  >
+                    <Avatar
+                      m={"1"}
+                      name={chat?.users[1]?.name}
+                      src={chat?.users[1]?.picture}
+                    />
+                    <Text fontWeight={"bold"}>
+                      {!chat.isGroupChat
+                        ? getSender(loggedUser, chat.users)
+                        : chat.chatName}
+                    </Text>
+                  </Flex>
+                );
+              })}
+            </VStack>
+          ) : (
+            <ChatSkeleton />
+          )}
+        </div>
       ) : (
-        <ChatSkeleton />
+        <Spinner />
       )}
     </Box>
   );

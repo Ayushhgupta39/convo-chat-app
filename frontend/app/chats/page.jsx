@@ -38,8 +38,8 @@ const page = () => {
           <Text>Convo</Text>
         </Box>
         <Flex alignItems={"center"} gap={"20px"} mx={"5"}>
-          <BsSearch cursor={"pointer"} />
-          <Menu>
+          <BsSearch cursor={"pointer"} />  
+          <Menu isLazy id={1}>
             <MenuButton>
               <Flex alignItems={"center"} cursor={"pointer"}>
                 <Avatar size={"sm"} name={user?.name} src={user?.picture} />
