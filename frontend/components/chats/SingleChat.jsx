@@ -16,6 +16,8 @@ import UpdateGroupChatModal from "./UpdateGroupChatModal";
 import axios from "axios";
 import ScrollableChat from "./ScrollableChat";
 import { io } from "socket.io-client";
+import Lottie from "react-lottie";
+import * as animationData from "@/public/assets/animation/typing.json"
 
 const ENDPOINT = "http://localhost:8080/";
 var socket, selectedChatCompare;
@@ -27,18 +29,36 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [newMessage, setNewMessage] = useState();
   const [socketConnected, setSocketConnected] = useState(false);
   const toast = useToast();
+  const [typing, setTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const lottieOptions = {
+    loop: true,
+    autoPlay: true,
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
 
   useEffect(() => {
     if (user) {
       socket = io(ENDPOINT);
       socket.emit("setup", user);
-      socket.on("connection", () => setSocketConnected(true));
+      socket.on("connected", () => setSocketConnected(true));
+
+      socket.on("typing", () => setIsTyping(true));
+      socket.on("stop typing", () => setIsTyping(false));
 
       socket.on("message received", (newMessageRecieved) => {
         if (
           !selectedChatCompare || // if chat is not selected or doesn't match current chat
           selectedChatCompare._id !== newMessageRecieved.chat._id
         ) {
+          if (!Notification.inclues(newMessageRecieved)) {
+            setNotifications([newMessageRecieved, ...notification])
+            setFetchAgain(!fetchAgain);
+          }
         } else {
           setMessages([...messages, newMessageRecieved]);
         }
@@ -88,6 +108,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
   const sendMessage = async (event) => {
     if (event.key === "Enter" && newMessage) {
+      socket.emit("stop typing", selectedChat._id);
       try {
         const config = {
           headers: {
@@ -121,20 +142,27 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     }
   };
 
-  // useEffect(() => {
-  //   socket.on("message received", (newMessageRecieved) => {
-  //     if (
-  //       !selectedChatCompare || // if chat is not selected or doesn't match current chat
-  //       selectedChatCompare._id !== newMessageRecieved.chat._id
-  //     ) {
-  //     } else {
-  //       setMessages([...messages, newMessageRecieved]);
-  //     }
-  //   });
-  // });
-
   const typingHandler = (e) => {
     setNewMessage(e.target.value);
+
+    if (!socketConnected) return;
+
+    if (!typing) {
+      setTyping(true);
+      socket.emit("typing", selectedChat._id);
+    }
+
+    let lastTypingTime = new Date().getTime();
+    var timerLength = 2000;
+    setTimeout(() => {
+      var timeNow = new Date().getTime();
+      var timeDiff = timeNow - lastTypingTime;
+
+      if (timeDiff >= timerLength && typing) {
+        socket.emit("stop typing", selectedChat._id);
+        setTyping(false);
+      }
+    }, timerLength);
   };
 
   return (
@@ -143,7 +171,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         <Box
           fontFamily={"Raleway"}
           height={"full"}
-          width={"full"}
+          width={"100%"}
           display={"flex"}
           flexDirection={"column"}
           justifyContent={"space-between"}
@@ -183,9 +211,10 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             p={3}
             bg="#E8E8E8"
             w="100%"
-            h="100%"
+            height={["70vh", "", "100%"]}
             borderRadius="lg"
             overflowY="scroll"
+            className="dabba"
           >
             {loading ? (
               <Flex
@@ -203,6 +232,18 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             )}
           </Box>
 
+          {/* {isTyping ? (
+            <Box width={"100%"}>
+              <Lottie
+                options={lottieOptions}
+                width={100}
+                height={100}
+                style={{ marginBottom: 15, marginLeft: 0 }}
+              />
+            </Box>
+          ) : (
+            <></>
+          )} */}
           <FormControl p={"2"} onKeyDown={sendMessage} isRequired>
             <Input
               type="text"
@@ -231,4 +272,3 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 };
 
 export default SingleChat;
-

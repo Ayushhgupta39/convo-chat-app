@@ -13,8 +13,8 @@ import {
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { RiArrowDropDownLine } from "react-icons/ri";
+import { IoIosNotificationsOutline } from "react-icons/io";
 import { BsSearch } from "react-icons/bs";
-import axios from "axios";
 import SearchBar from "@/components/chats/SearchBar";
 import Chatbox from "@/components/chats/Chatbox";
 import MyChats from "@/components/chats/MyChats";
@@ -38,6 +38,9 @@ const page = () => {
           <Text>Convo</Text>
         </Box>
         <Flex alignItems={"center"} gap={"20px"} mx={"5"}>
+          <div>
+          <IoIosNotificationsOutline size={"22px"} />
+          </div>
           <BsSearch cursor={"pointer"} />  
           <Menu isLazy id={1}>
             <MenuButton>
