@@ -23,7 +23,7 @@ const ENDPOINT = "http://localhost:8080/";
 var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
-  const { user, selectedChat, setSelectedChat } = ChatState();
+  const { user, selectedChat, setSelectedChat, notifications, setNotifications } = ChatState();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState();
@@ -55,8 +55,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
           !selectedChatCompare || // if chat is not selected or doesn't match current chat
           selectedChatCompare._id !== newMessageRecieved.chat._id
         ) {
-          if (!Notification.inclues(newMessageRecieved)) {
-            setNotifications([newMessageRecieved, ...notification])
+          if (!notifications.includes(newMessageRecieved)) {
+            setNotifications([newMessageRecieved, ...notifications])
             setFetchAgain(!fetchAgain);
           }
         } else {
@@ -105,6 +105,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     fetchMessages();
     selectedChatCompare = selectedChat;
   }, [selectedChat]);
+
+  console.log("Notifications:", notifications)
 
   const sendMessage = async (event) => {
     if (event.key === "Enter" && newMessage) {

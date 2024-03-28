@@ -14,15 +14,23 @@ import {
 import React, { useEffect, useState } from "react";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { IoIosNotificationsOutline } from "react-icons/io";
+import { MdOutlineNotificationsActive } from "react-icons/md";
 import { BsSearch } from "react-icons/bs";
 import SearchBar from "@/components/chats/SearchBar";
 import Chatbox from "@/components/chats/Chatbox";
 import MyChats from "@/components/chats/MyChats";
 import ProfileModal from "@/components/chats/ProfileModal";
 import { useRouter } from "next/navigation";
+import { getSender } from "@/config/ChatLogics";
 
 const page = () => {
-  const { user, selectedChat } = ChatState();
+  const {
+    user,
+    selectedChat,
+    setSelectedChat,
+    notifications,
+    setNotifications,
+  } = ChatState();
   const router = useRouter();
   const [fetchAgain, setFetchAgain] = useState(false);
 
@@ -38,10 +46,44 @@ const page = () => {
           <Text>Convo</Text>
         </Box>
         <Flex alignItems={"center"} gap={"20px"} mx={"5"}>
-          <div>
-          <IoIosNotificationsOutline size={"22px"} />
-          </div>
-          <BsSearch cursor={"pointer"} />  
+          <Flex alignItems={"center"}>
+            <Menu isLazy id={2}>
+              <MenuButton>
+                {notifications.length === 0 ? (
+                  <IoIosNotificationsOutline cursor={"pointer"} size={"22px"} />
+                ) : (
+                  <MdOutlineNotificationsActive
+                    cursor={"pointer"}
+                    size={"22px"}
+                  />
+                )}
+              </MenuButton>
+              <MenuList>
+                {notifications.length === 0 && (
+                  <MenuItem>No New Messages</MenuItem>
+                )}
+                {notifications.map((notification) => (
+                  <MenuItem
+                    onClick={() => {
+                      setSelectedChat(notification.chat);
+                      setNotifications(
+                        notifications.filter((n) => n !== notification)
+                      );
+                    }}
+                    key={notification._id}
+                  >
+                    {notification.chat.isGroupChat
+                      ? `New message in ${notification.chat.chatName}`
+                      : `New message from ${getSender(
+                          user,
+                          notification.chat.users
+                        )}`}
+                  </MenuItem>
+                ))}
+              </MenuList>
+            </Menu>
+          </Flex>
+          <BsSearch cursor={"pointer"} />
           <Menu isLazy id={1}>
             <MenuButton>
               <Flex alignItems={"center"} cursor={"pointer"}>
